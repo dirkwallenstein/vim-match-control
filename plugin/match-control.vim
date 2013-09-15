@@ -470,6 +470,17 @@ fun! s:MatchControl.ToggleMatches() dict
     endif
 endfun
 
+fun! s:MatchControl.IsDisplayOn() dict
+    " Return 1 if the display of matches is currently on.  Return 0 otherwise.
+    if self._GetBufferRecord()['display_state']
+        return 1
+    else
+        return 0
+    endif
+endfun
+
+" ---
+
 fun! s:MatchControl.GetActivePattern(index) dict
     " Return the pattern for a currently installed match pattern.  The argument
     " for a:index is the index into the currently installed patterns.  If normal
@@ -493,8 +504,11 @@ fun! s:MatchControl.GetActivePattern(index) dict
 endfun
 
 fun! s:MatchControl.SearchFirstPattern() dict
+    " Set the search register to the first active match pattern.
     let @/ = self.GetActivePattern(0)
 endfun
+
+" ---
 
 fun! s:MatchControl.InstallOverridePatterns(match_setup) dict
     " Install a match-setup in the current buffer only.  The a:match_setup
@@ -506,19 +520,11 @@ fun! s:MatchControl.InstallOverridePatterns(match_setup) dict
 endfun
 
 fun! s:MatchControl.UninstallOverridePatterns() dict
-    " Uninstall override patterns installed with g:MC_InstallOverridePatterns
+    " Uninstall override patterns installed with self.InstallOverridePatterns
     " and return to the previous configuration.
     call self.HideMatches()
     call remove(self._GetBufferRecord(), 'override_match_setup')
     call self.ShowMatches()
-endfun
-
-fun! s:MatchControl.IsDisplayOn() dict
-    if self._GetBufferRecord()['display_state']
-        return 1
-    else
-        return 0
-    endif
 endfun
 
 "
@@ -559,6 +565,7 @@ endfun
 " --- Commands
 "
 
+" The following commands take the id on which to act as argument.
 com -nargs=1 MatchControlToggle call
         \ <SID>ExecuteMethod(s:MatchControl.ToggleMatches, [], <f-args>)
 com -nargs=1 MatchControlShow call
