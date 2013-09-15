@@ -70,7 +70,7 @@ let s:MatchControl.match_setup = {}
 " This attribute will become the id specified when obtaining a new instance.
 let s:MatchControl.id = ''
 
-fun! s:MatchControl.New(id) dict
+fun! s:MatchControl._New(id) dict
     if has_key(s:all_instances, a:id)
         throw "MatchControl: a match object with id ".a:id." already exists."
     endif
@@ -92,7 +92,7 @@ endfun
 " --- Display Default (on/off)
 "
 
-fun! s:MatchControl.GetDisplayOnOffDefaultForFiletype() dict
+fun! s:MatchControl._GetDisplayOnOffDefaultForFiletype() dict
     " Return 1/0 depending on if the current filetype is configured to be on or
     " off.
     if !empty(self.on_filetypes)
@@ -113,7 +113,7 @@ fun! s:MatchControl.GetDisplayOnOffDefaultForFiletype() dict
     endif
 endfun
 
-function! s:MatchControl.IsOffBuftype() dict
+function! s:MatchControl._IsOffBuftype() dict
     let l:off_buftypes = filter(copy(self.off_buftypes),
                 \ 'v:val == &bt')
     if empty(l:off_buftypes)
@@ -123,7 +123,7 @@ function! s:MatchControl.IsOffBuftype() dict
     endif
 endfunction
 
-fun! s:MatchControl.IsOffCondition() dict
+fun! s:MatchControl._IsOffCondition() dict
     " Return 1 if any of the conditions in self.off_conditions
     " evaluates to true.
     for l:condition in self.off_conditions
@@ -134,28 +134,28 @@ fun! s:MatchControl.IsOffCondition() dict
     return 0
 endfun
 
-fun! s:MatchControl.GetDisplayOnOffDefault() dict
-    if self.IsOffCondition() || self.IsOffBuftype()
+fun! s:MatchControl._GetDisplayOnOffDefault() dict
+    if self._IsOffCondition() || self._IsOffBuftype()
         return 0
     else
-        return self.GetDisplayOnOffDefaultForFiletype()
+        return self._GetDisplayOnOffDefaultForFiletype()
     endif
 endfun
 
 " ---
 
-fun! s:MatchControl.GetMatchSetup() dict
-    let l:buffer_record = self.GetBufferRecord()
+fun! s:MatchControl._GetMatchSetup() dict
+    let l:buffer_record = self._GetBufferRecord()
     if has_key(l:buffer_record, 'override_match_setup')
         return l:buffer_record['override_match_setup']
     endif
     return self.match_setup
 endfun
 
-fun! s:MatchControl.GetMatchSpecs(mode) dict
+fun! s:MatchControl._GetMatchSpecs(mode) dict
     " Return the list of match-specs for the given a:mode.  Valid modes are
     " 'permanent', 'insert' and 'normal'.
-    let l:match_setup = self.GetMatchSetup()
+    let l:match_setup = self._GetMatchSetup()
     if !empty(&ft)
         try
             let l:ft_dict = l:match_setup[&ft]
@@ -177,7 +177,7 @@ endfun
 " --- Per-buffer Instance Records
 "
 
-fun! s:MatchControl.PrepareBufferRecord(display_state) dict
+fun! s:MatchControl._PrepareBufferRecord(display_state) dict
     if !exists("b:match_control_buf_records")
         let b:match_control_buf_records = {}
     endif
@@ -188,7 +188,7 @@ fun! s:MatchControl.PrepareBufferRecord(display_state) dict
     let l:buffer_record['display_state'] = a:display_state
 endfun
 
-fun! s:MatchControl.EnsureBufferRecord() dict
+fun! s:MatchControl._EnsureBufferRecord() dict
     " Check that all mandatory fields are present for this instance.
     if !exists("b:match_control_buf_records")
         throw "InvalidInit: Missing b:match_control_buf_records"
@@ -202,22 +202,14 @@ fun! s:MatchControl.EnsureBufferRecord() dict
     endif
 endfun
 
-fun! s:MatchControl.GetBufferRecord() dict
-    call self.EnsureBufferRecord()
+fun! s:MatchControl._GetBufferRecord() dict
+    call self._EnsureBufferRecord()
     return b:match_control_buf_records[self.id]
 endfun
 
-fun! s:MatchControl.IsDisplayOn() dict
-    if self.GetBufferRecord()['display_state']
-        return 1
-    else
-        return 0
-    endif
-endfun
-
-fun! s:MatchControl.IsBufferInitialized() dict
+fun! s:MatchControl._IsBufferInitialized() dict
     try
-        call self.EnsureBufferRecord()
+        call self._EnsureBufferRecord()
         return 1
     catch /InvalidInit/
         return 0
@@ -225,13 +217,13 @@ fun! s:MatchControl.IsBufferInitialized() dict
     throw "Should never be reached"
 endfun
 
-fun! s:MatchControl.RecordDisplayAsOn() dict
-    call self.EnsureBufferRecord()
+fun! s:MatchControl._RecordDisplayAsOn() dict
+    call self._EnsureBufferRecord()
     let b:match_control_buf_records[self.id]['display_state'] = 1
 endfun
 
-fun! s:MatchControl.RecordDisplayAsOff() dict
-    call self.EnsureBufferRecord()
+fun! s:MatchControl._RecordDisplayAsOff() dict
+    call self._EnsureBufferRecord()
     let b:match_control_buf_records[self.id]['display_state'] = 0
 endfun
 
@@ -239,7 +231,7 @@ endfun
 " --- Per-window Instance Records
 "
 
-fun! s:MatchControl.PrepareWindowRecord() dict
+fun! s:MatchControl._PrepareWindowRecord() dict
     if !exists("w:match_control_win_records")
         let w:match_control_win_records = {}
     endif
@@ -252,7 +244,7 @@ fun! s:MatchControl.PrepareWindowRecord() dict
     let w:match_control_win_records[self.id]['normal'] = []
 endfun
 
-fun! s:MatchControl.EnsureWindowRecord() dict
+fun! s:MatchControl._EnsureWindowRecord() dict
     " Check that all mandatory fields are present for this instance.
     if !exists("w:match_control_win_records")
         throw "InvalidInit: Missing w:match_control_win_records"
@@ -272,18 +264,18 @@ fun! s:MatchControl.EnsureWindowRecord() dict
     endif
 endfun
 
-fun! s:MatchControl.RecordActiveMatchId(mode, match_id) dict
-    call self.EnsureWindowRecord()
+fun! s:MatchControl._RecordActiveMatchId(mode, match_id) dict
+    call self._EnsureWindowRecord()
     call add(w:match_control_win_records[self.id][a:mode], a:match_id)
 endfun
 
-fun! s:MatchControl.ClearActiveMatchIds(mode) dict
-    call self.EnsureWindowRecord()
+fun! s:MatchControl._ClearActiveMatchIds(mode) dict
+    call self._EnsureWindowRecord()
     let w:match_control_win_records[self.id][a:mode] = []
 endfun
 
-fun! s:MatchControl.GetActiveMatchIds(mode) dict
-    call self.EnsureWindowRecord()
+fun! s:MatchControl._GetActiveMatchIds(mode) dict
+    call self._EnsureWindowRecord()
     return w:match_control_win_records[self.id][a:mode]
 endfun
 
@@ -291,46 +283,46 @@ endfun
 " --- General Match Processors
 "
 
-fun! s:MatchControl.InstallMatches_ABS(all_specs, match_mode) dict
+fun! s:MatchControl._InstallMatches_ABS(all_specs, match_mode) dict
     " Install the match specifications given in the list a:all_specs and
     " record them in the mode given in a:match_mode.  Deletes existing
     " matches recorded for a:match_mode first.
     if !self.IsDisplayOn()
         return 0
     endif
-    call self.DeleteMatches_ABS(a:match_mode)
+    call self._DeleteMatches_ABS(a:match_mode)
     for [l:highlight, l:pattern, l:priority] in a:all_specs
         exe 'let l:next_id = matchadd("' . l:highlight . '", '''
                     \ . l:pattern . ''', ' . l:priority . ')'
-        call self.RecordActiveMatchId(a:match_mode, l:next_id)
+        call self._RecordActiveMatchId(a:match_mode, l:next_id)
     endfor
     return 1
 endfun
 
-fun! s:MatchControl.DeleteMatches_ABS(match_mode) dict
+fun! s:MatchControl._DeleteMatches_ABS(match_mode) dict
     " Delete the excess line matches in this window recorded in
     " a:match_mode and clear that list.
-    for l:id in self.GetActiveMatchIds(a:match_mode)
+    for l:id in self._GetActiveMatchIds(a:match_mode)
         call matchdelete(l:id)
     endfor
-    call self.ClearActiveMatchIds(a:match_mode)
+    call self._ClearActiveMatchIds(a:match_mode)
 endfun
 
 "
 " --- Permanent Matches
 "
 
-fun! s:MatchControl.GetPermanentMatchSpecs() dict
-    return self.GetMatchSpecs('permanent')
+fun! s:MatchControl._GetPermanentMatchSpecs() dict
+    return self._GetMatchSpecs('permanent')
 endfun
 
-fun! s:MatchControl.DeletePermanentMatches() dict
+fun! s:MatchControl._DeletePermanentMatches() dict
     " Delete the excess line matches in this window
-    call self.DeleteMatches_ABS("permanent")
+    call self._DeleteMatches_ABS("permanent")
 endfun
 
-fun! s:MatchControl.SetPermanentMatches() dict
-    return self.InstallMatches_ABS(self.GetPermanentMatchSpecs(),
+fun! s:MatchControl._SetPermanentMatches() dict
+    return self._InstallMatches_ABS(self._GetPermanentMatchSpecs(),
                 \ "permanent")
 endfun
 
@@ -338,17 +330,17 @@ endfun
 " --- Insert Mode Matches
 "
 
-fun! s:MatchControl.GetInsertModeMatchSpecs() dict
-    return self.GetMatchSpecs('insert')
+fun! s:MatchControl._GetInsertModeMatchSpecs() dict
+    return self._GetMatchSpecs('insert')
 endfun
 
-fun! s:MatchControl.DeleteInsertModeMatches() dict
+fun! s:MatchControl._DeleteInsertModeMatches() dict
     " Delete the insert mode matches in this window
-    call self.DeleteMatches_ABS("insert")
+    call self._DeleteMatches_ABS("insert")
 endfun
 
-fun! s:MatchControl.SetInsertModeMatches() dict
-    return self.InstallMatches_ABS(self.GetInsertModeMatchSpecs(),
+fun! s:MatchControl._SetInsertModeMatches() dict
+    return self._InstallMatches_ABS(self._GetInsertModeMatchSpecs(),
                 \ "insert")
 endfun
 
@@ -356,17 +348,17 @@ endfun
 " --- Normal Mode Matches
 "
 
-fun! s:MatchControl.GetNormalModeMatchSpecs() dict
-    return self.GetMatchSpecs('normal')
+fun! s:MatchControl._GetNormalModeMatchSpecs() dict
+    return self._GetMatchSpecs('normal')
 endfun
 
-fun! s:MatchControl.DeleteNormalModeMatches() dict
+fun! s:MatchControl._DeleteNormalModeMatches() dict
     " Delete the insert mode matches in this window
-    call self.DeleteMatches_ABS("normal")
+    call self._DeleteMatches_ABS("normal")
 endfun
 
-fun! s:MatchControl.SetNormalModeMatches() dict
-    return self.InstallMatches_ABS(self.GetNormalModeMatchSpecs(),
+fun! s:MatchControl._SetNormalModeMatches() dict
+    return self._InstallMatches_ABS(self._GetNormalModeMatchSpecs(),
                 \ "normal")
 endfun
 
@@ -374,40 +366,40 @@ endfun
 " --- Init and Controls
 "
 
-fun! s:MatchControl.SwitchToMode(new_mode) dict
+fun! s:MatchControl._SwitchToMode(new_mode) dict
     " Switch the active matches (insert/normal)
     if a:new_mode == 'insert'
-        call self.DeleteNormalModeMatches()
-        call self.SetInsertModeMatches()
+        call self._DeleteNormalModeMatches()
+        call self._SetInsertModeMatches()
     elseif a:new_mode == 'normal'
-        call self.DeleteInsertModeMatches()
-        call self.SetNormalModeMatches()
+        call self._DeleteInsertModeMatches()
+        call self._SetNormalModeMatches()
     else
         throw "Invalid mode request: " . a:new_mode
     endif
 endfun
 
-fun! s:MatchControl.ReInitBuffer() dict
+fun! s:MatchControl._ReInitBuffer() dict
     " Setup excess lines for this buffer anew
-    if self.IsBufferInitialized()
+    if self._IsBufferInitialized()
         call self.HideMatches()
-        call self.InitializeBuffer_cond(1)
+        call self._InitializeBuffer_cond(1)
     endif
-    call self.SyncMatchControl()
+    call self._SyncMatchControl()
 endfun
 
-fun! s:MatchControl.InitializeBuffer_cond(force) dict
+fun! s:MatchControl._InitializeBuffer_cond(force) dict
     " Determine the initial state of the display (on/off)
-    if a:force || !self.IsBufferInitialized()
-        call self.PrepareBufferRecord(self.GetDisplayOnOffDefault())
+    if a:force || !self._IsBufferInitialized()
+        call self._PrepareBufferRecord(self._GetDisplayOnOffDefault())
     endif
 endfun
 
-fun! s:MatchControl.SyncMatchControl() dict
+fun! s:MatchControl._SyncMatchControl() dict
     " Sync the display to the current state of the buffer (show/hide).
     " Initialize the buffer and window if that hasn't already been done.
-    call self.PrepareWindowRecord()
-    call self.InitializeBuffer_cond(0)
+    call self._PrepareWindowRecord()
+    call self._InitializeBuffer_cond(0)
     if self.IsDisplayOn()
         call self.ShowMatches()
     else
@@ -421,21 +413,21 @@ endfun
 
 fun! s:MatchControl.ShowMatches() dict
     " Highlight the matches
-    call self.RecordDisplayAsOn()
-    call self.SetPermanentMatches()
+    call self._RecordDisplayAsOn()
+    call self._SetPermanentMatches()
     if mode() == "i"
-        call self.SwitchToMode("insert")
+        call self._SwitchToMode("insert")
     else
-        call self.SwitchToMode("normal")
+        call self._SwitchToMode("normal")
     endif
 endfun
 
 fun! s:MatchControl.HideMatches() dict
     " Delete all matches
-    call self.RecordDisplayAsOff()
-    call self.DeletePermanentMatches()
-    call self.DeleteNormalModeMatches()
-    call self.DeleteInsertModeMatches()
+    call self._RecordDisplayAsOff()
+    call self._DeletePermanentMatches()
+    call self._DeleteNormalModeMatches()
+    call self._DeleteInsertModeMatches()
 endfun
 
 fun! s:MatchControl.ToggleMatches() dict
@@ -454,7 +446,7 @@ fun! s:MatchControl.GetActivePattern(index) dict
     " patterns.  Throw an exception if there is no pattern at that index.
     let l:recorded_ids = []
     for l:mode in ["permanent", "normal", "insert"]
-        call extend(l:recorded_ids, self.GetActiveMatchIds(l:mode))
+        call extend(l:recorded_ids, self._GetActiveMatchIds(l:mode))
     endfor
     try
         let l:match_id = l:recorded_ids[a:index]
@@ -477,7 +469,7 @@ fun! s:MatchControl.InstallOverridePatterns(match_setup) dict
     " Install a match-setup in the current buffer only.  The a:match_setup
     " format is the same as for g:match_control_match_setup
     call self.HideMatches()
-    let l:buffer_record = self.GetBufferRecord()
+    let l:buffer_record = self._GetBufferRecord()
     let l:buffer_record['override_match_setup'] = a:match_setup
     call self.ShowMatches()
 endfun
@@ -486,8 +478,16 @@ fun! s:MatchControl.UninstallOverridePatterns() dict
     " Uninstall override patterns installed with g:MC_InstallOverridePatterns
     " and return to the previous configuration.
     call self.HideMatches()
-    call remove(self.GetBufferRecord(), 'override_match_setup')
+    call remove(self._GetBufferRecord(), 'override_match_setup')
     call self.ShowMatches()
+endfun
+
+fun! s:MatchControl.IsDisplayOn() dict
+    if self._GetBufferRecord()['display_state']
+        return 1
+    else
+        return 0
+    endif
 endfun
 
 "
@@ -501,15 +501,15 @@ fun! s:CallOnEachInstance(method, args)
 endfun
 
 fun! s:SyncAllMatchControls()
-    call s:CallOnEachInstance(s:MatchControl.SyncMatchControl, [])
+    call s:CallOnEachInstance(s:MatchControl._SyncMatchControl, [])
 endfun
 
 fun! s:ReInitBufferForAllMatchControls()
-    call s:CallOnEachInstance(s:MatchControl.ReInitBuffer, [])
+    call s:CallOnEachInstance(s:MatchControl._ReInitBuffer, [])
 endfun
 
 fun! s:SwitchModeForAllMatchControls(mode)
-    call s:CallOnEachInstance(s:MatchControl.SwitchToMode, [a:mode])
+    call s:CallOnEachInstance(s:MatchControl._SwitchToMode, [a:mode])
 endfun
 
 fun! s:ExecuteMethod(method, args, id)
@@ -535,7 +535,7 @@ fun! g:MC_CreateMatchControl(id)
     "
     " id: string that identifies uniquely this instance of match control.  It
     " will become the id attribute on the returned instance.
-    return s:MatchControl.New(a:id)
+    return s:MatchControl._New(a:id)
 endfun
 
 fun! g:MC_GetMatchControl(id)
