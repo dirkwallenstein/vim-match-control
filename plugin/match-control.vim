@@ -70,6 +70,37 @@ let s:MatchControl.match_setup = {}
 " This attribute will become the id specified when obtaining a new instance.
 let s:MatchControl.id = ''
 
+"
+" --- Helper Functions
+"
+
+fun! s:CallOnEachInstance(method, args)
+    for [l:id, l:instance] in items(s:all_instances)
+        call call(a:method, a:args, l:instance)
+    endfor
+endfun
+
+fun! s:SyncAllMatchControls()
+    call s:CallOnEachInstance(s:MatchControl._SyncMatchControl, [])
+endfun
+
+fun! s:ReInitBufferForAllMatchControls()
+    call s:CallOnEachInstance(s:MatchControl._ReInitBuffer, [])
+endfun
+
+fun! s:SwitchModeForAllMatchControls(mode)
+    call s:CallOnEachInstance(s:MatchControl._SwitchToMode, [a:mode])
+endfun
+
+fun! s:ExecuteMethod(method, args, id)
+    " Execute a method on the instance with the given id.
+    call call(a:method, a:args, g:MC_GetMatchControl(a:id))
+endfun
+
+"
+" Clone
+"
+
 fun! s:MatchControl._New(id) dict
     if has_key(s:all_instances, a:id)
         throw "MatchControl: a match object with id ".a:id." already exists."
@@ -491,33 +522,6 @@ fun! s:MatchControl.IsDisplayOn() dict
 endfun
 
 "
-" --- Helper Functions
-"
-
-fun! s:CallOnEachInstance(method, args)
-    for [l:id, l:instance] in items(s:all_instances)
-        call call(a:method, a:args, l:instance)
-    endfor
-endfun
-
-fun! s:SyncAllMatchControls()
-    call s:CallOnEachInstance(s:MatchControl._SyncMatchControl, [])
-endfun
-
-fun! s:ReInitBufferForAllMatchControls()
-    call s:CallOnEachInstance(s:MatchControl._ReInitBuffer, [])
-endfun
-
-fun! s:SwitchModeForAllMatchControls(mode)
-    call s:CallOnEachInstance(s:MatchControl._SwitchToMode, [a:mode])
-endfun
-
-fun! s:ExecuteMethod(method, args, id)
-    " Execute a method on the instance with the given id.
-    call call(a:method, a:args, g:MC_GetMatchControl(a:id))
-endfun
-
-"
 " --- Auto-Commands
 "
 
@@ -528,7 +532,9 @@ autocmd FileType * call <SID>ReInitBufferForAllMatchControls()
 autocmd InsertEnter * call <SID>SwitchModeForAllMatchControls("insert")
 autocmd InsertLeave * call <SID>SwitchModeForAllMatchControls("normal")
 
-" ==========
+"
+" --- Public Functions
+"
 
 fun! g:MC_CreateMatchControl(id)
     " Obtain a new match control instance.  The arguments are:
@@ -549,7 +555,9 @@ fun! g:MC_GetMatchControl(id)
     throw "NoSuchId: no instance recorded for the id: " . a:id
 endfun
 
-" ---
+"
+" --- Commands
+"
 
 com -nargs=1 MatchControlToggle call
         \ <SID>ExecuteMethod(s:MatchControl.ToggleMatches, [], <f-args>)
