@@ -512,7 +512,7 @@ endfun
 
 fun! s:MatchControl.InstallOverridePatterns(match_setup) dict
     " Install a match-setup in the current buffer only.  The a:match_setup
-    " format is the same as for g:match_control_match_setup
+    " format is the same as self.match_setup.
     call self.HideMatches()
     let l:buffer_record = self._GetBufferRecord()
     let l:buffer_record['override_match_setup'] = a:match_setup
