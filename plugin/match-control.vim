@@ -97,11 +97,13 @@ fun s:ExecuteMethod(method, args, id)
     call call(a:method, a:args, g:MC_GetMatchControl(a:id))
 endfun
 
-fun s:ReplaceFirstActivePatternOnInstance(id, replacement) range
+fun s:ReplaceFirstActivePatternOnInstance(startline, endline, id, replacement)
     " Implementation for the replacement and deletion commands.
+    let l:save_cursor = getpos('.')
     let l:mc_object = g:MC_GetMatchControl(a:id)
-    silent exe a:firstline . ',' . a:lastline
+    silent exe a:startline . ',' . a:endline
             \ . 'call l:mc_object.ReplaceFirstPattern(a:replacement)'
+    call setpos('.', l:save_cursor)
 endfun
 
 "
@@ -595,8 +597,10 @@ com -nargs=1 MatchControlHide call
 " with.  All commands take the id of the match-control as first argument.
 com -nargs=1 MatchControlSearchFirstPattern call
         \ <SID>ExecuteMethod(s:MatchControl.SearchFirstPattern, [], <f-args>)
-com -nargs=1 -range=% MatchControlDeleteFirstPattern  <line1>,<line2>call
-        \ <SID>ReplaceFirstActivePatternOnInstance(<f-args>, '')
+com -nargs=1 -range=% MatchControlDeleteFirstPattern call
+        \ <SID>ReplaceFirstActivePatternOnInstance(
+                \ <line1>, <line2>, <f-args>, '')
 " This command additionally takes a replacement as second argument
-com -nargs=* -range=% MatchControlReplaceFirstPattern <line1>,<line2>call
-        \ <SID>ReplaceFirstActivePatternOnInstance(<f-args>)
+com -nargs=* -range=% MatchControlReplaceFirstPattern call
+        \ <SID>ReplaceFirstActivePatternOnInstance(
+                \ <line1>, <line2>, <f-args>)
