@@ -75,6 +75,7 @@ let s:MatchControl.id = ''
 "
 
 fun s:CallOnEachInstance(method, args)
+    " Call a:method on s:MatchControl with the given list of arguments
     for [l:id, l:instance] in items(s:all_instances)
         call call(a:method, a:args, l:instance)
     endfor
@@ -97,7 +98,7 @@ fun s:ExecuteMethod(method, args, id)
     call call(a:method, a:args, g:MC_GetMatchControl(a:id))
 endfun
 
-fun s:ReplaceFirstActivePatternOnInstance(startline, endline, id, replacement)
+fun s:ReplaceFirstActivePatternOfInstance(startline, endline, id, replacement)
     " Implementation for the replacement and deletion commands.
     let l:save_cursor = getpos('.')
     let l:mc_object = g:MC_GetMatchControl(a:id)
@@ -111,6 +112,7 @@ endfun
 "
 
 fun s:MatchControl._New(id) dict
+    " Clone the prototype into a new instance.  Set the id as attribute.
     if has_key(s:all_instances, a:id)
         throw "MatchControl: a match object with id ".a:id." already exists."
     endif
@@ -218,6 +220,8 @@ endfun
 "
 
 fun s:MatchControl._PrepareBufferRecord(display_state) dict
+    " Put the buffer record into a state where all mandatory fields are present,
+    " and set the display_state to the argument.
     if !exists("b:match_control_buf_records")
         let b:match_control_buf_records = {}
     endif
@@ -248,6 +252,8 @@ fun s:MatchControl._GetBufferRecord() dict
 endfun
 
 fun s:MatchControl._IsBufferInitialized() dict
+    " Return 0 if this is a new buffer that has not yet been initialized for
+    " 'self'.
     try
         call self._EnsureBufferRecord()
         return 1
@@ -598,9 +604,9 @@ com -nargs=1 MatchControlHide call
 com -nargs=1 MatchControlSearchFirstActivePattern call <SID>ExecuteMethod(
         \ s:MatchControl.SearchFirstActivePattern, [], <f-args>)
 com -nargs=1 -range=% MatchControlDeleteFirstActivePattern call
-        \ <SID>ReplaceFirstActivePatternOnInstance(
+        \ <SID>ReplaceFirstActivePatternOfInstance(
                 \ <line1>, <line2>, <f-args>, '')
 " This command additionally takes a replacement as second argument
 com -nargs=* -range=% MatchControlReplaceFirstActivePattern call
-        \ <SID>ReplaceFirstActivePatternOnInstance(
+        \ <SID>ReplaceFirstActivePatternOfInstance(
                 \ <line1>, <line2>, <f-args>)
