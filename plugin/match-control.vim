@@ -97,6 +97,13 @@ fun s:ExecuteMethod(method, args, id)
     call call(a:method, a:args, g:MC_GetMatchControl(a:id))
 endfun
 
+fun s:ReplaceFirstActivePatternOnInstance(id, replacement) range
+    " Implementation for the replacement and deletion commands.
+    let l:mc_object = g:MC_GetMatchControl(a:id)
+    silent exe a:firstline . ',' . a:lastline
+            \ . 'call l:mc_object.ReplaceFirstPattern(a:replacement)'
+endfun
+
 "
 " Clone
 "
@@ -508,6 +515,15 @@ fun s:MatchControl.SearchFirstPattern() dict
     let @/ = self.GetActivePattern(0)
 endfun
 
+fun s:MatchControl.ReplaceFirstPattern(replacement) range dict
+    " Replace the first pattern with a:replacement in the given range.  The
+    " default range is the current line only.
+    let l:first_pattern = self.GetActivePattern(0)
+    silent! exe a:firstline . ',' . a:lastline
+            \ . 's/' . escape(l:first_pattern, '/')
+            \. '/' . escape(a:replacement, '/') . '/g'
+endfun
+
 " ---
 
 fun s:MatchControl.InstallOverridePatterns(match_setup) dict
@@ -573,5 +589,14 @@ com -nargs=1 MatchControlShow call
 com -nargs=1 MatchControlHide call
         \ <SID>ExecuteMethod(s:MatchControl.HideMatches, [], <f-args>)
 
+" Commands to work with the first active pattern.  You can use the method
+" GetActivePattern() to implement such operations on patterns other than at
+" index 0 or instantiate a match control for every pattern you want to work
+" with.  All commands take the id of the match-control as first argument.
 com -nargs=1 MatchControlSearchFirstPattern call
         \ <SID>ExecuteMethod(s:MatchControl.SearchFirstPattern, [], <f-args>)
+com -nargs=1 -range=% MatchControlDeleteFirstPattern  <line1>,<line2>call
+        \ <SID>ReplaceFirstActivePatternOnInstance(<f-args>, '')
+" This command additionally takes a replacement as second argument
+com -nargs=* -range=% MatchControlReplaceFirstPattern <line1>,<line2>call
+        \ <SID>ReplaceFirstActivePatternOnInstance(<f-args>)
