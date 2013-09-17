@@ -422,7 +422,7 @@ endfun
 fun s:MatchControl._ReInitBuffer() dict
     " Setup excess lines for this buffer anew
     if self._IsBufferInitialized()
-        call self.HideMatches()
+        call self.Hide()
         call self._InitializeBuffer_cond(1)
     endif
     call self._SyncMatchControl()
@@ -441,9 +441,9 @@ fun s:MatchControl._SyncMatchControl() dict
     call self._PrepareWindowRecord()
     call self._InitializeBuffer_cond(0)
     if self.IsDisplayOn()
-        call self.ShowMatches()
+        call self.Show()
     else
-        call self.HideMatches()
+        call self.Hide()
     endif
 endfun
 
@@ -451,7 +451,7 @@ endfun
 " --- Public Interface
 "
 
-fun s:MatchControl.ShowMatches() dict
+fun s:MatchControl.Show() dict
     " Highlight the matches
     call self._RecordDisplayAsOn()
     call self._SetPermanentMatches()
@@ -462,7 +462,7 @@ fun s:MatchControl.ShowMatches() dict
     endif
 endfun
 
-fun s:MatchControl.HideMatches() dict
+fun s:MatchControl.Hide() dict
     " Delete all matches
     call self._RecordDisplayAsOff()
     call self._DeletePermanentMatches()
@@ -470,12 +470,12 @@ fun s:MatchControl.HideMatches() dict
     call self._DeleteInsertModeMatches()
 endfun
 
-fun s:MatchControl.ToggleMatches() dict
+fun s:MatchControl.Toggle() dict
     " Toggle between hiding and showing matches.
     if self.IsDisplayOn()
-        call self.HideMatches()
+        call self.Hide()
     else
-        call self.ShowMatches()
+        call self.Show()
     endif
 endfun
 
@@ -531,18 +531,18 @@ endfun
 fun s:MatchControl.InstallOverridePatterns(match_setup) dict
     " Install a match-setup in the current buffer only.  The a:match_setup
     " format is the same as self.match_setup.
-    call self.HideMatches()
+    call self.Hide()
     let l:buffer_record = self._GetBufferRecord()
     let l:buffer_record['override_match_setup'] = a:match_setup
-    call self.ShowMatches()
+    call self.Show()
 endfun
 
 fun s:MatchControl.UninstallOverridePatterns() dict
     " Uninstall override patterns installed with self.InstallOverridePatterns
     " and return to the previous configuration.
-    call self.HideMatches()
+    call self.Hide()
     call remove(self._GetBufferRecord(), 'override_match_setup')
-    call self.ShowMatches()
+    call self.Show()
 endfun
 
 "
@@ -585,11 +585,11 @@ endfun
 
 " The following commands take the id on which to act as argument.
 com -nargs=1 MatchControlToggle call
-        \ <SID>ExecuteMethod(s:MatchControl.ToggleMatches, [], <f-args>)
+        \ <SID>ExecuteMethod(s:MatchControl.Toggle, [], <f-args>)
 com -nargs=1 MatchControlShow call
-        \ <SID>ExecuteMethod(s:MatchControl.ShowMatches, [], <f-args>)
+        \ <SID>ExecuteMethod(s:MatchControl.Show, [], <f-args>)
 com -nargs=1 MatchControlHide call
-        \ <SID>ExecuteMethod(s:MatchControl.HideMatches, [], <f-args>)
+        \ <SID>ExecuteMethod(s:MatchControl.Hide, [], <f-args>)
 
 " Commands to work with the first active pattern.  You can use the method
 " GetActivePattern() to implement such operations on patterns other than at
