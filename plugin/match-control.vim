@@ -102,7 +102,7 @@ fun s:ReplaceFirstActivePatternOnInstance(startline, endline, id, replacement)
     let l:save_cursor = getpos('.')
     let l:mc_object = g:MC_GetMatchControl(a:id)
     silent exe a:startline . ',' . a:endline
-            \ . 'call l:mc_object.ReplaceFirstPattern(a:replacement)'
+            \ . 'call l:mc_object.ReplaceFirstActivePattern(a:replacement)'
     call setpos('.', l:save_cursor)
 endfun
 
@@ -512,12 +512,12 @@ fun s:MatchControl.GetActivePattern(index) dict
     throw "ERROR: recorded id not found per getmatches()"
 endfun
 
-fun s:MatchControl.SearchFirstPattern() dict
+fun s:MatchControl.SearchFirstActivePattern() dict
     " Set the search register to the first active match pattern.
     let @/ = self.GetActivePattern(0)
 endfun
 
-fun s:MatchControl.ReplaceFirstPattern(replacement) range dict
+fun s:MatchControl.ReplaceFirstActivePattern(replacement) range dict
     " Replace the first pattern with a:replacement in the given range.  The
     " default range is the current line only.
     let l:first_pattern = self.GetActivePattern(0)
@@ -595,12 +595,12 @@ com -nargs=1 MatchControlHide call
 " GetActivePattern() to implement such operations on patterns other than at
 " index 0 or instantiate a match control for every pattern you want to work
 " with.  All commands take the id of the match-control as first argument.
-com -nargs=1 MatchControlSearchFirstPattern call
-        \ <SID>ExecuteMethod(s:MatchControl.SearchFirstPattern, [], <f-args>)
-com -nargs=1 -range=% MatchControlDeleteFirstPattern call
+com -nargs=1 MatchControlSearchFirstActivePattern call <SID>ExecuteMethod(
+        \ s:MatchControl.SearchFirstActivePattern, [], <f-args>)
+com -nargs=1 -range=% MatchControlDeleteFirstActivePattern call
         \ <SID>ReplaceFirstActivePatternOnInstance(
                 \ <line1>, <line2>, <f-args>, '')
 " This command additionally takes a replacement as second argument
-com -nargs=* -range=% MatchControlReplaceFirstPattern call
+com -nargs=* -range=% MatchControlReplaceFirstActivePattern call
         \ <SID>ReplaceFirstActivePatternOnInstance(
                 \ <line1>, <line2>, <f-args>)
