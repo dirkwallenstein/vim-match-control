@@ -102,3 +102,41 @@ fun g:MatchControl_CreateBadWhitespaceInstance(
 
     return l:mc_bw
 endfun
+
+" --- Excess Lines
+
+fun g:MatchControl_CreateExcessLinesInstance()
+    " Return a match-control instance that mimics the default behavior of the
+    " vim-excess-lines plugin.
+
+    highlight MC_EXP_InsertTail gui=undercurl guisp=Magenta
+                \ term=reverse ctermfg=15 ctermbg=12
+    highlight MC_EXP_Warning guifg=Black guibg=Yellow
+                \ term=standout cterm=bold ctermfg=0 ctermbg=3
+    highlight MC_EXP_Error guifg=White guibg=Firebrick
+                \ term=reverse cterm=bold ctermfg=7 ctermbg=1
+
+    let l:exp_permanent_matches = [
+        \   ["MC_EXP_Error", '\%81v.\+', -70],
+        \   ]
+    let l:exp_insert_mode_matches = [
+        \   ["MC_EXP_Warning",  '\zs\%70v.\ze.*\%#', -50],
+        \   ["MC_EXP_Warning",  '\%#.*\zs\%70v.\ze', -50],
+        \   ["MC_EXP_InsertTail",  '\%81v.\+\%#.*$', -50],
+        \   ]
+    let l:exp_normal_mode_matches = []
+
+    let l:match_setup = {
+        \ '*': {
+        \       'permanent': l:exp_permanent_matches,
+        \       'normal': l:exp_normal_mode_matches,
+        \       'insert': l:exp_insert_mode_matches,
+        \       },
+        \ }
+
+    let l:mc_el = g:MC_CreateMatchControl('excess-lines')
+    let l:mc_el.match_setup = l:match_setup
+    let l:mc_el.off_conditions = ['!&modifiable', '&wrap']
+
+    return l:mc_el
+endfun
