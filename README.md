@@ -18,11 +18,13 @@ bottom of that file for the public interface.
         let g:mc_div = g:MC_CreateMatchControl('div')
 
         " Configure the instance
-        let g:mc_div.match_setup = s:bs_match_setup
         let g:mc_div.off_filetypes = ['gitcommit', 'sh']
         let g:mc_div.on_filetypes = []
         let g:mc_div.off_conditions = ['!&modifiable', '&wrap']
         let g:mc_div.off_buftypes = ['quickfix']
+        let g:mc_div.match_setup = {'diff': {
+                \'permanent': [["HlgrpName", '^+.\+\zs\%82v.\+\ze', -70]],
+                \ }}
     endif
 
 There are commands for the most common operations. They take the id of the
