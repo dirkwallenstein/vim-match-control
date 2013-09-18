@@ -339,7 +339,8 @@ fun s:MatchControl._InstallMatches_ABS(all_specs, match_mode) dict
     call self._DeleteMatches_ABS(a:match_mode)
     for [l:highlight, l:pattern, l:priority] in a:all_specs
         exe 'let l:next_id = matchadd("' . l:highlight . '", '''
-                    \ . l:pattern . ''', ' . l:priority . ')'
+                    \ . substitute(l:pattern, "'", "''", "g") . ''', '
+                    \ . l:priority . ')'
         call self._RecordActiveMatchId(a:match_mode, l:next_id)
     endfor
     return 1
