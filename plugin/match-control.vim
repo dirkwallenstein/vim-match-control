@@ -198,21 +198,22 @@ fun s:MatchControl._GetMatchSpecs(mode) dict
     " Return the list of match-specs for the given a:mode.  Valid modes are
     " 'permanent', 'insert' and 'normal'.
     let l:match_setup = self._GetMatchSetup()
-    if !empty(&ft)
-        try
-            let l:ft_dict = l:match_setup[&ft]
-            let l:ft_match_specs = l:ft_dict[a:mode]
-            return l:ft_match_specs
-        catch /E716/ " Key not present in Dictionary
-        endtry
+    let l:found_match_specs = []
+    " search ft-specific entry
+    if !empty(&ft) && has_key(l:match_setup, &ft)
+        let l:ft_dict = l:match_setup[&ft]
+        if has_key(l:ft_dict, a:mode)
+            let l:found_match_specs = l:ft_dict[a:mode]
+        endif
     endif
-    try
+    " search fallback entry '*'
+    if empty(l:found_match_specs) && has_key(l:match_setup, '*')
         let l:default_dict = l:match_setup['*']
-        let l:fallback_match_specs = l:default_dict[a:mode]
-        return l:fallback_match_specs
-    catch /E716/ " Key not present in Dictionary
-    endtry
-    return []
+        if has_key(l:default_dict, a:mode)
+            let l:found_match_specs = l:default_dict[a:mode]
+        endif
+    endif
+    return l:found_match_specs
 endfun
 
 "
