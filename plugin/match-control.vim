@@ -146,9 +146,9 @@ fun s:MatchControl._GetDisplayOnOffDefaultForFiletype() dict
             return 1
         endif
     endif
-    let l:off_filtypes = filter(copy(self.off_filetypes),
+    let l:off_filetypes = filter(copy(self.off_filetypes),
                 \ 'v:val == &ft')
-    if empty(l:off_filtypes)
+    if empty(l:off_filetypes)
         return 1
     else
         return 0
