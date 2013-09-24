@@ -220,7 +220,7 @@ endfun
 " --- Per-buffer Instance Records
 "
 
-fun s:MatchControl._PrepareBufferRecord(display_state) dict
+fun s:MatchControl._PrepareBufferRecord() dict
     " Put the buffer record into a state where all mandatory fields are present,
     " and set the display_state to the argument.
     if !exists("b:match_control_buf_records")
@@ -230,16 +230,14 @@ fun s:MatchControl._PrepareBufferRecord(display_state) dict
         let b:match_control_buf_records[self.id] = {}
     endif
     let l:buffer_record = b:match_control_buf_records[self.id]
-    let l:buffer_record['display_state'] = a:display_state
+    let l:buffer_record['display_state'] = self._GetDisplayOnOffDefault()
 endfun
 
 fun s:MatchControl._EnsureBufferRecord() dict
     " Check that all mandatory fields are present for this instance.
     if !exists("b:match_control_buf_records")
-        throw "InvalidInit: Missing b:match_control_buf_records"
-    endif
-    if !has_key(b:match_control_buf_records, self.id)
-        throw "InvalidInit: Missing buffer record for " . self.id
+                \ || !has_key(b:match_control_buf_records, self.id)
+        call self._PrepareBufferRecord()
     endif
     let l:buffer_record = b:match_control_buf_records[self.id]
     if !has_key(l:buffer_record, 'display_state')
@@ -294,10 +292,8 @@ endfun
 fun s:MatchControl._EnsureWindowRecord() dict
     " Check that all mandatory fields are present for this instance.
     if !exists("w:match_control_win_records")
-        throw "InvalidInit: Missing w:match_control_win_records"
-    endif
-    if !has_key(w:match_control_win_records, self.id)
-        throw "InvalidInit: Missing window record for " . self.id
+                \ || !has_key(w:match_control_win_records, self.id)
+        call self._PrepareWindowRecord()
     endif
     let l:window_record = w:match_control_win_records[self.id]
     if !has_key(l:window_record, 'permanent')
@@ -439,14 +435,13 @@ endfun
 fun s:MatchControl._InitializeBuffer_cond(force) dict
     " Determine the initial state of the display (on/off)
     if a:force || !self._IsBufferInitialized()
-        call self._PrepareBufferRecord(self._GetDisplayOnOffDefault())
+        call self._PrepareBufferRecord()
     endif
 endfun
 
 fun s:MatchControl._SyncMatchControl() dict
     " Sync the display to the current state of the buffer (show/hide).
     " Initialize the buffer and window if that hasn't already been done.
-    call self._PrepareWindowRecord()
     call self._InitializeBuffer_cond(0)
     if self.IsDisplayOn()
         call self.Show()
