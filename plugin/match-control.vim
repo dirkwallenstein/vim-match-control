@@ -138,7 +138,7 @@ fun s:MatchControl._GetDisplayOnOffDefaultForFiletype() dict
     " Return 1/0 depending on if the current filetype is configured to be on or
     " off.
     if !empty(self.on_filetypes)
-        let l:on_filtypes = filter(copy(self.on_filetypes),
+        let l:on_filetypes = filter(copy(self.on_filetypes),
                     \ 'v:val == &ft')
         if empty(l:on_filetypes)
             return 0
