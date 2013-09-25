@@ -24,7 +24,7 @@ ru plugin/match-control.vim
 " --- Bad Whitespace
 "
 
-fun s:GetExcessLinePatternsForPatches()
+fun s:GetBadWhitespacePatternsForPatches()
     let l:save_cursor = getpos(".")
     let patch_info = {}
     if search('^@\+', 'we')
@@ -45,7 +45,7 @@ endfun
 
 fun s:InstallPatchPatternsIntoCurrentBuffer(hlgrp)
     try
-        let l:patch_info = s:GetExcessLinePatternsForPatches()
+        let l:patch_info = s:GetBadWhitespacePatternsForPatches()
     catch /PatchPatterns/
         " No patch found in current buffer
         return
