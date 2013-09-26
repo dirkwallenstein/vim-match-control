@@ -7,8 +7,8 @@ additional schemes with all the controls that EL has to offer.
 
 Here, you create a clone of the `MatchControl` class and configure it by setting
 attributes.  You can also call methods on that object to control or access
-matches.  See the plugin file at the top for configuration attributes and the
-bottom of that file for the public interface.
+matches.  See the [plugin-file][] at the top for configuration attributes and
+the bottom of that file for the public interface.
 
     ru plugin/match-control.vim
 
@@ -58,3 +58,4 @@ not highlight space in the +/- columns.
 
   [vim-excess-lines]: https://github.com/dirkwallenstein/vim-excess-lines
   [vim-bad-whitespace]: https://github.com/dirkwallenstein/vim-bad-whitespace
+  [plugin-file]: https://github.com/dirkwallenstein/vim-match-control/blob/master/plugin/match-control.vim
