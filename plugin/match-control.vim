@@ -34,13 +34,16 @@ let s:all_instances = {}
 " Create the match control prototype:
 let s:MatchControl = {}
 
-" A list of filetypes for which not to highlight match-control initially.
+" A list of filetypes for which not to highlight match-control initially.  You
+" can use a '!' here for buffers with an empty filetype, but an empty string
+" works, too.
 let s:MatchControl.off_filetypes = []
 
 " A list of filetypes for which to exclusively highlight match-control
 " initially.  For all other filetypes match-control highlighting will be
 " turned off initially.  An empty list has no effect.  Items in the
-" off-filetypes list will be overridden if included here.
+" off-filetypes list will be overridden if included here.  For buffers with
+" an empty filetype, the same rules as for off_filetypes apply.
 let s:MatchControl.on_filetypes = []
 
 " Conditions for which to start in off mode.  This overrides the filetype
@@ -62,6 +65,9 @@ let s:MatchControl.off_buftypes = ['quickfix', 'nofile', 'help']
 " (insert/normal or all the time) in the filetype given as top level key.
 " Each of the mode keys in a filetype specific entry falls back to the mode
 " key in the fallback entry individually.  Specify empty lists to override.
+"
+" Use the key '!' for buffers with an empty filetype.  Dictionaries can not have
+" empty keys.  Think of it as NOT.
 "
 " Actually, the normal mode key comprises all the modes that are not the
 " insert mode.
@@ -134,20 +140,29 @@ endfun
 " --- Display Default (on/off)
 "
 
+fun s:MatchControl._TranslateListItems(list, from, to)
+    " Replace every item in list that is equal to a:from with a:to.  The
+    " operation is done in place.
+    return map(a:list, "v:val == a:from ? a:to : v:val")
+endfun
+
 fun s:MatchControl._GetDisplayOnOffDefaultForFiletype() dict
     " Return 1/0 depending on if the current filetype is configured to be on or
     " off.
     if !empty(self.on_filetypes)
-        let l:on_filetypes = filter(copy(self.on_filetypes),
-                    \ 'v:val == &ft')
+        let l:on_filetypes = self._TranslateListItems(
+                    \ copy(self.on_filetypes), '!', '')
+        call filter(l:on_filetypes, 'v:val == &ft')
         if empty(l:on_filetypes)
             return 0
         else
             return 1
         endif
     endif
-    let l:off_filetypes = filter(copy(self.off_filetypes),
-                \ 'v:val == &ft')
+
+    let l:off_filetypes = self._TranslateListItems(
+                \ copy(self.off_filetypes), '!', '')
+    call filter(l:off_filetypes, 'v:val == &ft')
     if empty(l:off_filetypes)
         return 1
     else
@@ -199,9 +214,11 @@ fun s:MatchControl._GetMatchSpecs(mode) dict
     " 'permanent', 'insert' and 'normal'.
     let l:match_setup = self._GetMatchSetup()
     let l:found_match_specs = []
-    " search ft-specific entry
-    if !empty(&ft) && has_key(l:match_setup, &ft)
-        let l:ft_dict = l:match_setup[&ft]
+    " search ft-specific entry.  Use '!' as the key for empty &ft because
+    " a dictionary cannot have an empty key.
+    let l:ft_key = empty(&ft) ? '!' : &ft
+    if has_key(l:match_setup, l:ft_key)
+        let l:ft_dict = l:match_setup[l:ft_key]
         if has_key(l:ft_dict, a:mode)
             let l:found_match_specs = l:ft_dict[a:mode]
         endif

@@ -27,6 +27,9 @@ the bottom of that file for the public interface.
                 \ }}
     endif
 
+Unlike in EL, you can configure match-specifications for buffers with no
+filetype set, by using the key `'!'`.
+
 There are commands for the most common operations. They take the id of the
 match-control instance to operate on as argument.
 
