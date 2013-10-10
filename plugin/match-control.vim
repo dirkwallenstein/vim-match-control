@@ -91,10 +91,6 @@ fun s:SyncAllMatchControls()
     call s:CallOnEachInstance(s:MatchControl._SyncMatchControl, [])
 endfun
 
-fun s:ReInitBufferForAllMatchControls()
-    call s:CallOnEachInstance(s:MatchControl._ReInitBuffer, [])
-endfun
-
 fun s:SwitchModeForAllMatchControls(mode)
     call s:CallOnEachInstance(s:MatchControl._SwitchToMode, [a:mode])
 endfun
@@ -573,7 +569,7 @@ endfun
 
 " The entry point:
 autocmd WinEnter,BufWinEnter,ColorScheme * call <SID>SyncAllMatchControls()
-autocmd FileType * call <SID>ReInitBufferForAllMatchControls()
+autocmd FileType * call g:MC_ReInitBufferForAllMatchControls()
 " Insert mode matches are added/removed by autocommands:
 autocmd InsertEnter * call <SID>SwitchModeForAllMatchControls("insert")
 autocmd InsertLeave * call <SID>SwitchModeForAllMatchControls("normal")
@@ -599,6 +595,16 @@ fun g:MC_GetMatchControl(id)
         endif
     endfor
     throw "NoSuchId: no instance recorded for the id: " . a:id
+endfun
+
+fun g:MC_ReInitBufferForAllMatchControls()
+    " Depending on how a buffer is created the autocommands above might not
+    " be executed in the final state.  For example, if a new buffer is
+    " incrementally equipped with further options but not a filetype, your
+    " configuration might not be effective.  The same might happen when the
+    " filetype option is not set last.  Use this function in your mappings to
+    " work around that.
+    call s:CallOnEachInstance(s:MatchControl._ReInitBuffer, [])
 endfun
 
 "
