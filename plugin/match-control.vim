@@ -214,6 +214,7 @@ fun s:MatchControl._GetMatchSpecs(mode) dict
     " 'permanent', 'insert' and 'normal'.
     let l:match_setup = self._GetMatchSetup()
     let l:found_match_specs = []
+    let l:found_ft_entry_for_mode = 0
     " search ft-specific entry.  Use '!' as the key for empty &ft because
     " a dictionary cannot have an empty key.
     let l:ft_key = empty(&ft) ? '!' : &ft
@@ -221,10 +222,11 @@ fun s:MatchControl._GetMatchSpecs(mode) dict
         let l:ft_dict = l:match_setup[l:ft_key]
         if has_key(l:ft_dict, a:mode)
             let l:found_match_specs = l:ft_dict[a:mode]
+            let l:found_ft_entry_for_mode = 1
         endif
     endif
     " search fallback entry '*'
-    if empty(l:found_match_specs) && has_key(l:match_setup, '*')
+    if !l:found_ft_entry_for_mode && has_key(l:match_setup, '*')
         let l:default_dict = l:match_setup['*']
         if has_key(l:default_dict, a:mode)
             let l:found_match_specs = l:default_dict[a:mode]
