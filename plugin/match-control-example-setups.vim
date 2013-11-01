@@ -26,12 +26,12 @@ ru plugin/match-control.vim
 
 fun s:GetBadWhitespacePatternsForPatches()
     let l:save_cursor = getpos(".")
-    if search('^@\+', 'we')
-        let l:start_colum = col('.')
-    else
+    let l:match_line_number = search('^@\+', 'we')
+    let l:start_colum = col('.')
+    call setpos('.', l:save_cursor)
+    if ! l:match_line_number
         throw "PatchPatterns: no sequence of @ chars found"
     endif
-    call setpos('.', l:save_cursor)
 
     let l:pattern_prefix = '\%' . l:start_colum . 'c.\{-\}\zs\s\+\ze'
 
