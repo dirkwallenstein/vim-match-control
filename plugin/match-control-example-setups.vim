@@ -26,7 +26,6 @@ ru plugin/match-control.vim
 
 fun s:GetBadWhitespacePatternsForPatches()
     let l:save_cursor = getpos(".")
-    let patch_info = {}
     if search('^@\+', 'we')
         let l:start_colum = col('.')
     else
