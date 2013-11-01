@@ -7,8 +7,8 @@ This plugin provides a frontend to `matchadd()` and it allows you to configure
 persistently where to see which matches.
 
 Or put another way: You can take over every aspect of text coloring in a buffer
-and highlight information that is important to you, if you can express it in
-form of a regular expression.
+and highlight information that is important to you, as long as you can express
+it in form of a regular expression.
 
 ##### Features:
 
