@@ -109,9 +109,9 @@ selected filetypes starting at different columns, you can use something like
 this:
 
     let g:mc_div.match_setup = {
-        \ '*': { 'permanent': ["Error", '\%81v.\+', -50]},
-        \ 'html': { 'permanent': ["Error", '\%91v.\+', -50]},
-        \ 'text': { 'permanent': ["Error", '\%101v.\+', -50]},
+        \ '*':    { 'permanent': [["Error", '\%81v.\+', -50]]},
+        \ 'html': { 'permanent': [["Error", '\%91v.\+', -50]]},
+        \ 'text': { 'permanent': [["Error", '\%99v.\+', -50]]},
         \ }
 
 You can configure match-specifications for buffers with no filetype set, by
